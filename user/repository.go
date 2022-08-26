@@ -5,6 +5,8 @@ import "gorm.io/gorm"
 type Repository interface {
 	Save(user User) (User, error)
 	FindByEmail(email string) (User, error)
+	FindByID(ID int) (User, error)
+	Update(user User) (User, error)
 }
 
 type repository struct {
@@ -23,5 +25,16 @@ func (r *repository) Save(user User) (User, error) {
 func (r *repository) FindByEmail(email string) (User, error) {
 	var user User
 	err := r.db.Where("email = ?", email).Find(&user).Error
+	return user, err
+}
+
+func (r *repository) FindByID(ID int) (User, error) {
+	var user User
+	err := r.db.Where("ID = ?", ID).Find(&user).Error
+	return user, err
+}
+
+func (r *repository) Update(user User) (User, error) {
+	err := r.db.Save(&user).Error
 	return user, err
 }
