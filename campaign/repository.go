@@ -3,7 +3,7 @@ package campaign
 import "gorm.io/gorm"
 
 type Repository interface {
-	FinAll() ([]Campaign, error)
+	FindAll() ([]Campaign, error)
 	FindByUserID(userID int) ([]Campaign, error)
 }
 

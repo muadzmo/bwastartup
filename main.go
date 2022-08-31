@@ -29,18 +29,12 @@ func main() {
 	userRepository := user.NewRepository(db) // repository koneksi ke db
 	campainRepository := campaign.NewRepository(db)
 
-	campaigns, err := campainRepository.FindByUserID(9)
-	for _, campaign := range campaigns {
-		fmt.Println(campaign.Name)
-		if len(campaign.CampaignImages) > 0 {
-			fmt.Println(campaign.CampaignImages[0].FileName)
-		}
-	}
-
-	return
-
 	userService := user.NewService(userRepository) // hubungkan service ke repository
+	campaignService := campaign.NewService(campainRepository)
 	authService := auth.NewService()
+
+	campaigns, err := campaignService.FinCampaigns(5)
+	fmt.Println(len(campaigns))
 
 	userHandler := handler.NewUserHandler(userService, authService)
 
