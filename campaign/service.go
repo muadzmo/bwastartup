@@ -12,6 +12,7 @@ type Service interface {
 	GetCampaignById(input GetCampaignDetailInput) (Campaign, error)
 	CreateCampaign(input CreateCampaignInput) (Campaign, error)
 	UpdateCampaign(inputID GetCampaignDetailInput, inputData CreateCampaignInput) (Campaign, error)
+	SaveCampaignImage(input CreateCampaignImageInput, fileLocation string) (CampaignImage, error)
 }
 
 type service struct {
@@ -51,7 +52,7 @@ func (s *service) CreateCampaign(input CreateCampaignInput) (Campaign, error) {
 	// tambahan by Me :D
 	campaignExist, _ := s.repository.FindBySlug(campaign.Slug)
 	if campaignExist.ID > 0 {
-		return campaign, errors.New("Can not continue, this user has already made the same campaign name")
+		return campaign, errors.New("can not continue, this user has already made the same campaign name")
 	}
 
 	newCampaign, err := s.repository.Save(campaign)
@@ -65,7 +66,7 @@ func (s *service) UpdateCampaign(inputID GetCampaignDetailInput, inputData Creat
 	}
 
 	if campaign.UserID != inputData.User.ID {
-		return campaign, errors.New("Not authorized")
+		return campaign, errors.New("not authorized")
 	}
 
 	campaign.Name = inputData.Name
@@ -82,4 +83,34 @@ func (s *service) UpdateCampaign(inputID GetCampaignDetailInput, inputData Creat
 
 func getSlug(slugCandidate string) string {
 	return slug.Make(slugCandidate)
+}
+
+func (s *service) SaveCampaignImage(input CreateCampaignImageInput, fileLocation string) (CampaignImage, error) {
+	campaign, err := s.repository.FindById(input.CampaignID)
+	if err != nil {
+		return CampaignImage{}, err
+	}
+
+	if campaign.UserID != input.User.ID {
+		return CampaignImage{}, errors.New("not authorized")
+	}
+
+	isPrimary := 0
+	fmt.Println(90)
+	if input.IsPrimary {
+		isPrimary = 1
+		_, err := s.repository.MarkAllImagesAsNorPrimary(input.CampaignID)
+		if err != nil {
+			return CampaignImage{}, err
+		}
+	}
+
+	campaignImage := CampaignImage{}
+	campaignImage.CampaignID = input.CampaignID
+	campaignImage.IsPrimary = isPrimary
+	campaignImage.FileName = fileLocation
+
+	fmt.Println(104)
+	newCampaignImage, err := s.repository.CreateImage(campaignImage)
+	return newCampaignImage, err
 }
