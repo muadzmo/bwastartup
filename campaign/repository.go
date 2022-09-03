@@ -8,6 +8,7 @@ type Repository interface {
 	FindById(ID int) (Campaign, error)
 	Save(campaign Campaign) (Campaign, error)
 	FindBySlug(slug string) (Campaign, error)
+	Update(campaign Campaign) (Campaign, error)
 }
 
 type repository struct {
@@ -48,5 +49,10 @@ func (r *repository) Save(campaign Campaign) (Campaign, error) {
 func (r *repository) FindBySlug(slug string) (Campaign, error) {
 	var campaign Campaign
 	err := r.db.Where("slug = ?", slug).Find(&campaign).Error
+	return campaign, err
+}
+
+func (r *repository) Update(campaign Campaign) (Campaign, error) {
+	err := r.db.Save(&campaign).Error
 	return campaign, err
 }
