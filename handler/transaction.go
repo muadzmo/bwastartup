@@ -1,14 +1,42 @@
 package handler
 
-import "time"
+import (
+	"bwastartup/helper"
+	"bwastartup/transaction"
+	"bwastartup/user"
+	"net/http"
 
-type Transaction struct {
-	ID         int
-	CampaignID int
-	UserID     int
-	Amount     int
-	Status     int
-	Code       string
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
+	"github.com/gin-gonic/gin"
+)
+
+type transactionHandler struct {
+	service transaction.Service
+}
+
+func NewTransactionHandler(service transaction.Service) *transactionHandler {
+	return &transactionHandler{service}
+}
+
+func (h *transactionHandler) GetCampaignTransactions(c *gin.Context) {
+	var input transaction.GetCampaignTransactionsInput
+
+	err := c.ShouldBindUri(&input)
+	if err != nil {
+		response := helper.APIResponse(err.Error(), http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	currentUser := c.MustGet("currentUser").(user.User)
+	input.User = currentUser
+
+	transactions, err := h.service.GetTransactionsByCampaignID(input)
+	if err != nil {
+		response := helper.APIResponse(err.Error(), http.StatusBadRequest, "error", transactions)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	response := helper.APIResponse("Transactions List", http.StatusOK, "success", transaction.FormatCampaignTransactions(transactions))
+	c.JSON(http.StatusOK, response)
 }
