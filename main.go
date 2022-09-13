@@ -20,7 +20,8 @@ import (
 )
 
 func main() {
-	dsn := "sql6514988:ev6vdZG56R@tcp(sql6.freesqldatabase.com:3306)/sql6514988?charset=utf8mb4&parseTime=True&loc=Local"
+	// dsn := "sql6514988:ev6vdZG56R@tcp(sql6.freesqldatabase.com:3306)/sql6514988?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "root:root@tcp(localhost:3306)/bwastartup?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
 	if err != nil {
@@ -43,7 +44,13 @@ func main() {
 	transactionHandler := handler.NewTransactionHandler(transactionService)
 
 	router := gin.Default()
-	router.Use(cors.Default())
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+	config.AllowCredentials = true
+	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type"}
+	config.AddAllowHeaders("Authorization")
+
+	router.Use(cors.New(config))
 	router.Static("/images", "./images")
 	api := router.Group("/api/v1")
 
